@@ -17,9 +17,9 @@ module.exports = {
 	resolvers: {
 		Query: {
 			getCountry: (parent, {countryId}) => {
-				countryFound = {}
+				let countryFound = {}
 				countries.forEach((country) => {
-					if (country.id == countryId) {
+					if (country.id === countryId) {
 						countryFound = country
 					}
 				})
@@ -31,8 +31,7 @@ module.exports = {
 			name: (parent, data, {lang}) => {
 				callNumber++
 				console.log(`country.name call: ${callNumber}`, parent)
-				// return parent[lang]
-				return "countryName"
+				return parent[lang]
 			}
 		}
 	},

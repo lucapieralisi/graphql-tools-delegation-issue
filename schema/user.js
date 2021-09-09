@@ -20,6 +20,7 @@ module.exports = {
 	typeDefs: `
 		type User {
 			id: Int!
+			countryId: Int!
 			username: String!
 		}
 

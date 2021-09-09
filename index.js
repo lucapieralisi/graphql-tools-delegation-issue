@@ -1,12 +1,13 @@
 const {ApolloServer} = require("apollo-server")
-const {makeExecutableSchema, mergeSchemas} = require('@graphql-tools/schema')
+const {makeExecutableSchema} = require('@graphql-tools/schema')
+const {stitchSchemas} = require("@graphql-tools/stitch")
 const {delegateToSchema} = require('@graphql-tools/delegate')
 
 const userSchema = require("./schema/user")
 const countrySchema = require("./schema/country")
 
-const mergedSchema = mergeSchemas({
-	schemas: [
+const gatewaySchema = stitchSchemas({
+	subschemas: [
 		makeExecutableSchema(userSchema),
 		makeExecutableSchema(countrySchema)
 	],
@@ -17,27 +18,31 @@ const mergedSchema = mergeSchemas({
 	`,
 	resolvers: {
 		User: {
-			country({countryId}, args, context, info) {
-				return delegateToSchema({
-					schema: info.schema,
-					operation: "query",
-					fieldName: "getCountry",
-					args: {
-		  				countryId: countryId,
-					},
-					context,
-					info,
-	  			});
+			country: {
+				selectionSet: `{countryId}`,
+				resolve({countryId}, args, context, info) {
+					console.log("delegateToSchema: ", countryId)
+					return delegateToSchema({
+						schema: info.schema,
+						operation: "query",
+						fieldName: "getCountry",
+						args: {
+							countryId: countryId,
+						},
+						context,
+						info,
+					})
+				}
 			}
 		}
 	}
 })
 
 const server = new ApolloServer({
-	schema: mergedSchema,
+	schema: gatewaySchema,
 	context: {lang: "en"}
-});
+})
 
-server.listen().then(({url}) => {
+server.listen(4005).then(({url}) => {
 	console.log(`🚀  Server ready at ${url}`);
-});
+})
